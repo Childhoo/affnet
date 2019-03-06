@@ -27,25 +27,25 @@ from Utils import str2bool
 
 from dataset import  TripletPhotoTour
 root='dataset'
-train_loader = torch.utils.data.DataLoader(
-        TripletPhotoTour(train=True,
-                         batch_size=128,
-                         root=root,
-                         name='notredame',
-                         download=True,
-                         transform=None),
-                         batch_size=128,
-                         shuffle=False)
+#train_loader = torch.utils.data.DataLoader(
+#        TripletPhotoTour(train=True,
+#                         batch_size=128,
+#                         root=root,
+#                         name='notredame',
+#                         download=True,
+#                         transform=None),
+#                         batch_size=128,
+#                         shuffle=False)
 
-train_loader = torch.utils.data.DataLoader(
-        TripletPhotoTour(train=True,
-                         batch_size=128,
-                         root=root,
-                         name='yosemite',
-                         download=True,
-                         transform=None),
-                         batch_size=128,
-                         shuffle=False)
+#train_loader = torch.utils.data.DataLoader(
+#        TripletPhotoTour(train=True,
+#                         batch_size=128,
+#                         root=root,
+#                         name='yosemite',
+#                         download=True,
+#                         transform=None),
+#                         batch_size=128,
+#                         shuffle=False)
 
 train_loader = torch.utils.data.DataLoader(
         TripletPhotoTour(train=True,

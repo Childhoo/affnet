@@ -26,17 +26,22 @@ model.eval()
 if USE_CUDA:
     model.cuda()
 
-try:
-    input_img_fname = sys.argv[1]
-    output_fname = sys.argv[2]
-except:
-    print "Wrong input format. Try ./detect_affine_shape.py imgs/ref.png out.txt"
-    sys.exit(1)
+input_img_fname = "imgs/face.png"
+output_fname = "out.txt"
 
+#try:
+#    input_img_fname = sys.argv[1]
+#    output_fname = sys.argv[2]
+#except:
+#    print("Wrong input format. Try ./detect_affine_shape.py imgs/ref.png out.txt")
+#    sys.exit(1)
+
+	
+print("start to load image")
 image = cv2.imread(input_img_fname,0)
 h,w = image.shape
 
-n_patches =  h/w
+n_patches =  int(h/w)
 
 descriptors_for_net = np.zeros((n_patches, 4))
 
@@ -46,7 +51,7 @@ for i in range(n_patches):
     patches[i,0,:,:] = cv2.resize(patch,(PS,PS)) / 255.
 bs = 128;
 outs = []
-n_batches = n_patches / bs + 1
+n_batches = int(n_patches / bs) + 1
 t = time.time()
 for batch_idx in range(n_batches):
     if batch_idx == n_batches - 1:
@@ -67,4 +72,5 @@ for batch_idx in range(n_batches):
     out_a = model(data_a)
     descriptors_for_net[batch_idx * bs: end,:] = out_a.data.cpu().numpy().reshape(-1, 4)
 et  = time.time() - t
+print("start to save result")
 np.savetxt(output_fname,  descriptors_for_net, delimiter=' ', fmt='%10.5f')    

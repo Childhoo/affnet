@@ -100,7 +100,7 @@ def convertLAFs_to_A23format(LAFs):
         work_LAFs[:,1,0] = LAFs[:,4]
         work_LAFs[:,1,1] = LAFs[:,5]
     else:
-        print 'Unknown LAF format'
+        print('Unknown LAF format')
         return None
     return work_LAFs
 
