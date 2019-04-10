@@ -28,7 +28,7 @@ try:
     output_fname = sys.argv[2]
     nfeats = int(sys.argv[3])
 except:
-    print "Wrong input format. Try python hesaffBaum.py imgs/cat.png cat.txt 2000"
+    print("Wrong input format. Try python hesaffBaum.py imgs/cat.png cat.txt 2000")
     sys.exit(1)
 
 img = Image.open(input_img_fname).convert('RGB')
@@ -43,7 +43,8 @@ if USE_CUDA:
     var_image_reshape = var_image_reshape.cuda()
 
 LAFs, resp = HA(var_image_reshape)
-ells  = LAFs2ellT(LAFs.cpu()).cpu().numpy()
+#ells  = LAFs2ellT(LAFs.cpu()).cpu().numpy()
+ells  = LAFs2ellT(LAFs.cpu()).cpu().detach().numpy()
 
 np.savetxt(output_fname, ells, delimiter=' ', fmt='%10.10f')
 line_prepender(output_fname, str(len(ells)))
