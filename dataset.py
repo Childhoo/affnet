@@ -252,6 +252,8 @@ class TotalDatasetsLoader(data.Dataset):
                 except:
                     print (indices.keys())
                     sys.exit(0)
+                if len(indices[c1]) == 1: #jump out "dead" bug zone
+                    continue
                 if len(indices[c1]) == 2:  # hack to speed up process
                     n1, n2 = 0, 1
                 else:
@@ -261,7 +263,7 @@ class TotalDatasetsLoader(data.Dataset):
                         n2 = np.random.randint(0, len(indices[c1]))
                 triplets.append([indices[c1][n1], indices[c1][n2]])
                 
-                print("done one iteration in generating triplets!\n")
+#                print("done one iteration in generating triplets!\n")
             return torch.LongTensor(np.array(triplets))
 
     def __getitem__(self, index):
