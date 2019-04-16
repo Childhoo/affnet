@@ -38,6 +38,7 @@ from Utils import L2Norm, cv2_scale
 np_reshape = lambda x: np.reshape(x, (64, 64, 1))
 from Utils import str2bool
 from dataset import HPatchesDM,TripletPhotoTour, TotalDatasetsLoader
+from dataset_ipi import TripletPhotoTour_IPI
 cv2_scale40 = lambda x: cv2.resize(x, dsize=(40, 40),
                                  interpolation=cv2.INTER_LINEAR)
 from augmentation import get_random_norm_affine_LAFs,get_random_rotation_LAFs, get_random_shifts_LAFs
