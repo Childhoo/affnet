@@ -232,11 +232,14 @@ class TotalDatasetsLoader(data.Dataset):
                     inds[ind].append(idx)
                 return inds
             triplets = []
+            print("creating indices\n")
             indices = create_indices(labels.numpy())
+            print("creating indices done!\n")
             unique_labels = np.unique(labels.numpy())
             n_classes = unique_labels.shape[0]
             # add only unique indices in batch
             already_idxs = set()
+            print("begin to generate triplets!\n")
             for x in tqdm(range(num_triplets)):
                 if len(already_idxs) >= batch_size:
                     already_idxs = set()
@@ -257,6 +260,8 @@ class TotalDatasetsLoader(data.Dataset):
                     while n1 == n2:
                         n2 = np.random.randint(0, len(indices[c1]))
                 triplets.append([indices[c1][n1], indices[c1][n2]])
+                
+                print("done one iteration in generating triplets!\n")
             return torch.LongTensor(np.array(triplets))
 
     def __getitem__(self, index):
@@ -364,6 +369,8 @@ class TripletPhotoTour(dset.PhotoTour):
             c2 = np.random.randint(0, n_classes - 1)
             while c1 == c2:
                 c2 = np.random.randint(0, n_classes - 1)
+            if len(indices[c1]) == 1: #jump out "dead" bug zone
+                continue
             if len(indices[c1]) == 2:  # hack to speed up process
                 n1, n2 = 0, 1
             else:
