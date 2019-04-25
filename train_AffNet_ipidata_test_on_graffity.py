@@ -58,7 +58,7 @@ tilt_schedule = {'0': 3.0, '1': 4.0, '3': 4.5, '5': 4.8, '6': 5.2, '8':  5.8 }
 parser = argparse.ArgumentParser(description='PyTorch AffNet')
 
 parser.add_argument('--dataroot', type=str,
-                    default='datasets/',
+                    default='F:/affnet/affnet/dataset/ipi_data',
                     help='path to dataset')
 parser.add_argument('--log-dir', default='./logs',
                     help='folder to output model checkpoints')
@@ -76,7 +76,7 @@ parser.add_argument('--batch-size', type=int, default=128, metavar='BS',
                     help='input batch size for training (default: 128)')
 parser.add_argument('--test-batch-size', type=int, default=1024, metavar='BST',
                     help='input batch size for testing (default: 1000)')
-parser.add_argument('--n-pairs', type=int, default=500000, metavar='N',
+parser.add_argument('--n-pairs', type=int, default=5000, metavar='N',
                     help='how many pairs will generate from the dataset')
 parser.add_argument('--n-test-pairs', type=int, default=50000, metavar='N',
                     help='how many pairs will generate from the test dataset')
