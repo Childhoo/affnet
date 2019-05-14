@@ -34,7 +34,8 @@ USE_CUDA = False
 
 ### Initialization
 AffNetPix = AffNetFast(PS = 32)
-weightd_fname = '../../pretrained/AffNet.pth'
+#weightd_fname = '../../pretrained/AffNet.pth'
+weightd_fname = '../../logs/AffNetFast_lr005_10M_20ep_aswap_ipidata_AffNetFast_6Brown_HardNet_0.005_10000000_HardNegC/checkpoint_18.pth'
 
 checkpoint = torch.load(weightd_fname)
 AffNetPix.load_state_dict(checkpoint['state_dict'])
@@ -102,8 +103,11 @@ for filename in glob.glob(directory+"*.ppm"):
     LAFs[:,5] = work_LAFs[:,1,1]
     
     # write into .ori and .desc files
-    out_file_ori_name = filename+"ori_affnet.txt"
+    out_file_ori_name = filename+"ori_affnet_ipi.txt"
     np.savetxt(out_file_ori_name, LAFs, fmt='%10.9f')
     
-    out_file_desc_name = filename+"desc_affnet.txt"
+    out_file_desc_name = filename+"desc_affnet_ipi.txt"
     np.savetxt(out_file_desc_name, descriptors.numpy(), fmt='%10.9f')
+    
+    out_file_response_name = filename+"response_affnet_ipi.txt"
+    np.savetxt(out_file_response_name, res.numpy(), fmt='%10.9f')
