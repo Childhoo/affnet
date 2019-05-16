@@ -42,7 +42,8 @@ from augmentation import get_random_norm_affine_LAFs,get_random_rotation_LAFs, g
 from LAF import denormalizeLAFs, LAFs2ell, abc2A, extract_patches,normalizeLAFs
 from pytorch_sift import SIFTNet
 from HardNet import HardNet, L2Norm
-from Losses import loss_HardNetDetach, loss_HardNet
+#from Losses import loss_HardNetDetach, loss_HardNet
+from Losses import loss_HardNet
 from SparseImgRepresenter import ScaleSpaceAffinePatchExtractor
 from LAF import denormalizeLAFs, LAFs2ell, abc2A,visualize_LAFs
 import seaborn as sns
@@ -268,8 +269,8 @@ def train(train_loader, model, optimizer, epoch):
         geom_dist = torch.sqrt(((out_a_rot - out_p_rotatad)**2 ).view(-1,4).sum(dim=1)[0] + 1e-8).mean()
         if args.loss == 'HardNet':
             loss = loss_HardNet(desc_a,desc_p); 
-        elif args.loss == 'HardNetDetach':
-            loss = loss_HardNetDetach(desc_a,desc_p); 
+#        elif args.loss == 'HardNetDetach':
+#            loss = loss_HardNetDetach(desc_a,desc_p); 
         elif args.loss == 'Geom':
             loss = geom_dist; 
         elif args.loss == 'PosDist':
