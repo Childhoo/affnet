@@ -41,19 +41,33 @@ checkpoint = torch.load(weightd_fname)
 AffNetPix.load_state_dict(checkpoint['state_dict'])
 
 AffNetPix.eval()
-    
+
+#load orientation net for more training process
+from architectures import OriNetFast
+OriNetPix = OriNetFast(PS=32)
+weightd_fname_orinet = '../../logs/OriNetFast_lr005_10M_20ep_aswap_ipidata_OriNet_6Brown_HardNet_0.005_10000000_HardNet/checkpoint_16.pth'
+
+checkpoint_orinet = torch.load(weightd_fname_orinet)
+OriNetPix.load_state_dict(checkpoint_orinet['state_dict'])
+OriNetPix.eval()
+
+
 detector = ScaleSpaceAffinePatchExtractor( mrSize = 5.192, num_features = 3000,
                                           border = 5, num_Baum_iters = 1, 
-                                          AffNet = AffNetPix)
+                                          OriNet = OriNetPix, AffNet = AffNetPix)
+#detector = ScaleSpaceAffinePatchExtractor( mrSize = 5.192, num_features = 3000,
+#                                          border = 5, num_Baum_iters = 1, 
+#                                          AffNet = AffNetPix)
 descriptor = HardNet()
 model_weights = '../../HardNet++.pth'
 hncheckpoint = torch.load(model_weights)
 descriptor.load_state_dict(hncheckpoint['state_dict'])
 descriptor.eval()
+
+
 if USE_CUDA:
     detector = detector.cuda()
     descriptor = descriptor.cuda()
-
 
 
 def load_grayscale_var(fname):
