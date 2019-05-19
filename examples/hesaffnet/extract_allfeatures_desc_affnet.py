@@ -30,7 +30,7 @@ from Utils import line_prepender
 from architectures import AffNetFast
 from HardNet import HardNet
 
-USE_CUDA = False
+USE_CUDA = True
 
 ### Initialization
 AffNetPix = AffNetFast(PS = 32)
@@ -45,7 +45,7 @@ AffNetPix.eval()
 #load orientation net for more training process
 from architectures import OriNetFast
 OriNetPix = OriNetFast(PS=32)
-weightd_fname_orinet = '../../logs/OriNetFast_lr005_10M_20ep_aswap_ipidata_OriNet_6Brown_HardNet_0.005_10000000_HardNet/checkpoint_16.pth'
+weightd_fname_orinet = '../../logs/OriNetFast_lr005_10M_20ep_aswap_ipidata_OriNet_6Brown_HardNet_0.005_10000000_HardNet/checkpoint_14.pth'
 
 checkpoint_orinet = torch.load(weightd_fname_orinet)
 OriNetPix.load_state_dict(checkpoint_orinet['state_dict'])
@@ -121,7 +121,7 @@ for filename in glob.glob(directory+"*.ppm"):
     np.savetxt(out_file_ori_name, LAFs, fmt='%10.9f')
     
     out_file_desc_name = filename+"desc_affnet_ipi.txt"
-    np.savetxt(out_file_desc_name, descriptors.numpy(), fmt='%10.9f')
+    np.savetxt(out_file_desc_name, descriptors.cpu().numpy(), fmt='%10.9f')
     
     out_file_response_name = filename+"response_affnet_ipi.txt"
-    np.savetxt(out_file_response_name, res.numpy(), fmt='%10.9f')
+    np.savetxt(out_file_response_name, res.cpu().numpy(), fmt='%10.9f')

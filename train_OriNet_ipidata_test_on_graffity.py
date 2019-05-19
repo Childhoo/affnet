@@ -305,6 +305,9 @@ def get_geometry_and_descriptors(img, det, desc, do_ori = True):
         descriptors = desc(patches)
     return LAFs, descriptors
 
+
+
+
 def test(model,epoch):
     torch.cuda.empty_cache()
     # switch to evaluate mode
