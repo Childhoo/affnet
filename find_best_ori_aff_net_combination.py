@@ -88,12 +88,12 @@ def get_geometry_and_descriptors(img, det, desc, do_ori = True):
 #        descriptors = descriptor(patches)
 #    return LAFs, descriptors, resp
 
-def get_geometry_and_descriptors(img, det, desc, do_ori = True):
-    with torch.no_grad():
-        LAFs, resp = det(img,do_ori = do_ori)
-        patches = det.extract_patches_from_pyr(LAFs, PS = 32)
-        descriptors = desc(patches)
-    return LAFs, descriptors
+#def get_geometry_and_descriptors(img, det, desc, do_ori = True):
+#    with torch.no_grad():
+#        LAFs, resp = det(img,do_ori = do_ori)
+#        patches = det.extract_patches_from_pyr(LAFs, PS = 32)
+#        descriptors = desc(patches)
+#    return LAFs, descriptors
 
 def test(epoch):
     torch.cuda.empty_cache()

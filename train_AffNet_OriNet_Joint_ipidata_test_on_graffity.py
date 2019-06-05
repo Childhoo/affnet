@@ -1,5 +1,12 @@
 # -*- coding: utf-8 -*-
 """
+Created on Wed Jun  5 15:32:16 2019
+
+@author: chenlin
+"""
+
+# -*- coding: utf-8 -*-
+"""
 Created on Tue Apr 16 10:43:07 2019
 
 @author: Lin Chen
@@ -195,7 +202,7 @@ def extract_random_LAF(data, max_rot = math.pi, max_tilt = 1.0, crop_size = 32):
     data_aff = extract_patches(data,  aff_LAFs, PS = data.size(2))
     data_affcrop = data_aff[:,:, st:fin, st:fin].contiguous()
     return data_affcrop, data_aff, rot_LAFs,inv_rotmat,inv_TA 
-def train(train_loader, model, optimizer, epoch):
+def train(train_loader, model, model_ori, optimizer, epoch):
     # switch to train mode
     model.train()
     pbar = tqdm(enumerate(train_loader))
@@ -212,8 +219,10 @@ def train(train_loader, model, optimizer, epoch):
             if ep1 < 0:
                 break
         max_tilt = tilt_schedule[str(ep1)]
-        #extract affine augmented patches from the input anchor patch
+        #extract affine augmented patches from the input anchor patch, use different parameters for affine and rotation module
         data_a_aff_crop, data_a_aff, rot_LAFs_a, inv_rotmat_a, inv_TA_a = extract_random_LAF(data_a, math.pi, max_tilt, model.PS)
+        data_p_aff_crop, data_p_aff, rot_LAFs_p, inv_rotmat_p, inv_TA_p = extract_random_LAF(data_p, math.pi, max_tilt, model.PS)
+        '''
         if 'Rot' not in args.arch:
             # when rotation is seprated from affine parameters, the same rotation is used for anchor and positive patch
             data_p_aff_crop, data_p_aff, rot_LAFs_p, inv_rotmat_p, inv_TA_p = extract_random_LAF(data_p, rot_LAFs_a, max_tilt, model.PS)
@@ -221,12 +230,23 @@ def train(train_loader, model, optimizer, epoch):
             data_p_aff_crop, data_p_aff, rot_LAFs_p, inv_rotmat_p, inv_TA_p = extract_random_LAF(data_p, math.pi, max_tilt, model.PS)
         if inv_rotmat_p is None:
             inv_rotmat_p = inv_rotmat_a
+            '''
+        # here pridict the affine shape first
         out_a_aff, out_p_aff = model(data_a_aff_crop,True), model(data_p_aff_crop,True)
         #out_a_aff_back = torch.bmm(torch.bmm(out_a_aff, inv_TA_a),  inv_rotmat_a)
         #out_p_aff_back = torch.bmm(torch.bmm(out_p_aff, inv_TA_p),  inv_rotmat_p)
         ###### Get descriptors
         out_patches_a_crop = extract_and_crop_patches_by_predicted_transform(data_a_aff, out_a_aff, crop_size = model.PS)
         out_patches_p_crop = extract_and_crop_patches_by_predicted_transform(data_p_aff, out_p_aff, crop_size = model.PS)
+        
+        out_a_rot, out_p_crop = model_ori(out_patches_a_crop,True), model_ori(out_patches_p_crop,True)
+
+        ######Apply rot and get sifts
+        out_patches_a_crop = extract_and_crop_patches_by_predicted_transform(out_patches_a_crop, out_a_rot, crop_size = model_ori.PS)
+        out_patches_p_crop = extract_and_crop_patches_by_predicted_transform(out_patches_p_crop, out_p_crop, crop_size = model_ori.PS)
+        
+        # use this aff_corr cropped patch to estimate ori
+        
         desc_a = descriptor(out_patches_a_crop)
         desc_p = descriptor(out_patches_p_crop)
         descr_dist =  torch.sqrt(((desc_a - desc_p)**2).view(data_a.size(0),-1).sum(dim=1) + 1e-6).mean()
@@ -361,18 +381,20 @@ def adjust_learning_rate(optimizer):
         1.0 - float(group['step']) * float(args.batch_size) / (args.n_pairs * float(args.epochs)))
     return
 
-def create_optimizer(model, new_lr):
-    optimizer = optim.SGD(model.parameters(), lr=new_lr,
+def create_optimizer(model, model_ori, new_lr):
+    all_params = list(model.parameters()) + list(model_ori.parameters())
+    optimizer = optim.SGD(all_params, lr=new_lr,
                           momentum=0.9, dampening=0.9,
                           weight_decay=args.wd)
     return optimizer
 
-def main(train_loader, test_loader, model):
+def main(train_loader, test_loader, model, model_ori):
     # print the experiment configuration
     print('\nparsed options:\n{}\n'.format(vars(args)))
     if args.cuda:
         model.cuda()
-    optimizer1 = create_optimizer(model, args.lr)
+        model_ori.cuda()
+    optimizer1 = create_optimizer(model, model_ori, args.lr)
     # optionally resume from a checkpoint
     if args.resume:
         if os.path.isfile(args.resume):
@@ -381,6 +403,7 @@ def main(train_loader, test_loader, model):
             args.start_epoch = checkpoint['epoch']
             checkpoint = torch.load(args.resume)
             model.load_state_dict(checkpoint['state_dict'])
+            model_ori.load_state_dict(checkpoint['state_dict']) #also loading ori parameters
         else:
             print('=> no checkpoint found at {}'.format(args.resume))
     start = args.start_epoch
@@ -388,8 +411,8 @@ def main(train_loader, test_loader, model):
     test(model, -1)
     for epoch in range(start, end):
         # iterate over test loaders and test results
-        train(train_loader, model, optimizer1, epoch)
-        test(model, epoch)
+        train(train_loader, model, model_ori,optimizer1, epoch)
+        test(model, model_ori, epoch)
     return 0
 if __name__ == '__main__':
     LOG_DIR = args.log_dir
@@ -423,5 +446,10 @@ if __name__ == '__main__':
     else:
         print (args.arch, 'is incorrect architecture')
         sys.exit(1)
+        
+    from architectures import OriNetFast
+    model_ori = OriNetFast(PS=32)
+    
+    
     train_loader, test_loader = create_loaders()
-    main(train_loader, test_loader, model)
+    main(train_loader, test_loader, model, model_ori)

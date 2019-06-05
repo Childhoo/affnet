@@ -1,5 +1,12 @@
 # -*- coding: utf-8 -*-
 """
+Created on Mon May 20 11:35:23 2019
+
+@author: chenlin
+"""
+
+# -*- coding: utf-8 -*-
+"""
 Created on Sun May 19 22:39:09 2019
 
 an example of matching image features
@@ -48,16 +55,22 @@ OriNetPix.eval()
 
 
 detector = ScaleSpaceAffinePatchExtractor( mrSize = 5.192, num_features = 5000,
-                                          border = 5, num_Baum_iters = 1, 
-                                          OriNet = OriNetPix, AffNet = AffNetPix)
+                                          border = 5, num_Baum_iters = 1)
 #detector = ScaleSpaceAffinePatchExtractor( mrSize = 5.192, num_features = 3000,
 #                                          border = 5, num_Baum_iters = 1, 
 #                                          AffNet = AffNetPix)
-descriptor = HardNet()
-model_weights = '../../HardNet++.pth'
-hncheckpoint = torch.load(model_weights)
-descriptor.load_state_dict(hncheckpoint['state_dict'])
+#descriptor = HardNet()
+#model_weights = '../../HardNet++.pth'
+#hncheckpoint = torch.load(model_weights)
+#descriptor.load_state_dict(hncheckpoint['state_dict'])
+#descriptor.eval()
+from pytorch_sift import SIFTNet
+descriptor = SIFTNet(patch_size=32)
+#model_weights = '../../HardNet++.pth'
+#hncheckpoint = torch.load(model_weights)
+#descriptor.load_state_dict(hncheckpoint['state_dict'])
 descriptor.eval()
+
 
 
 if USE_CUDA:
