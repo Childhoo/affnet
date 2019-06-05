@@ -290,12 +290,13 @@ def get_geometry_and_descriptors(img, det, desc, do_ori = True):
         descriptors = desc(patches)
     return LAFs, descriptors
 
-def test(model,epoch):
+def test(model,model_ori, epoch):
     torch.cuda.empty_cache()
     # switch to evaluate mode
     model.eval()
     detector = ScaleSpaceAffinePatchExtractor( mrSize = 5.192, num_features = 3000,
                                           border = 5, num_Baum_iters = 1, 
+                                          OriNet = model_ori,
                                           AffNet = model)
     descriptor = HardNet()
     model_weights = 'HardNet++.pth'
