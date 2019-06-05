@@ -205,6 +205,7 @@ def extract_random_LAF(data, max_rot = math.pi, max_tilt = 1.0, crop_size = 32):
 def train(train_loader, model, model_ori, optimizer, epoch):
     # switch to train mode
     model.train()
+    model_ori.train()
     pbar = tqdm(enumerate(train_loader))
     for batch_idx, data in pbar:
         data_a, data_p = data
