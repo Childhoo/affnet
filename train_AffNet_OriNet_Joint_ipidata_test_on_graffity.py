@@ -410,7 +410,7 @@ def main(train_loader, test_loader, model, model_ori):
             print('=> no checkpoint found at {}'.format(args.resume))
     start = args.start_epoch
     end = start + args.epochs
-    test(model, -1)
+    test(model,model_ori, -1)
     for epoch in range(start, end):
         # iterate over test loaders and test results
         train(train_loader, model, model_ori,optimizer1, epoch)
