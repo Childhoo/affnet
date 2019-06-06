@@ -294,6 +294,8 @@ def test(model,model_ori, epoch):
     torch.cuda.empty_cache()
     # switch to evaluate mode
     model.eval()
+    model_ori.eval()
+    #add the oriNet in the modelling process
     detector = ScaleSpaceAffinePatchExtractor( mrSize = 5.192, num_features = 3000,
                                           border = 5, num_Baum_iters = 1, 
                                           OriNet = model_ori,
@@ -413,7 +415,7 @@ def main(train_loader, test_loader, model, model_ori):
     test(model,model_ori, -1)
     for epoch in range(start, end):
         # iterate over test loaders and test results
-        train(train_loader, model, model_ori,optimizer1, epoch)
+        train(train_loader, model, model_ori, optimizer1, epoch)
         test(model, model_ori, epoch)
     return 0
 if __name__ == '__main__':
