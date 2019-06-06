@@ -248,8 +248,8 @@ def train(train_loader, model, optimizer, epoch):
         ###### Get descriptors
         
         # appy rot and crop the affine corrected patches
-        out_patches_a_affc = extract_and_crop_patches_by_predicted_transform(data_a_aff, out_a_aff, crop_size = 1.5*orientor.PS)
-        out_patches_p_affc = extract_and_crop_patches_by_predicted_transform(data_p_aff, out_p_aff, crop_size = 1.5*orientor.PS)
+        out_patches_a_affc = extract_and_crop_patches_by_predicted_transform(data_a_aff, out_a_aff, crop_size = int(1.5*orientor.PS))
+        out_patches_p_affc = extract_and_crop_patches_by_predicted_transform(data_p_aff, out_p_aff, crop_size = int(1.5*orientor.PS))
         
         
         st = int((1.5*orientor.PS - orientor.PS)/2)
