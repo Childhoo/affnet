@@ -313,7 +313,7 @@ def test(model,epoch):
     torch.cuda.empty_cache()
     # switch to evaluate mode
     model.eval()
-    detector = ScaleSpaceAffinePatchExtractor( mrSize = 5.192, num_features = 3000,
+    detector = ScaleSpaceAffinePatchExtractor( mrSize = 5.192, num_features = 800,
                                           border = 5, num_Baum_iters = 1, 
                                           #OriNet = orientor,
                                           AffNet = model)

@@ -54,7 +54,7 @@ OriNetPix.load_state_dict(checkpoint_orinet['state_dict'])
 OriNetPix.eval()
 
 
-detector = ScaleSpaceAffinePatchExtractor( mrSize = 5.192, num_features = 5000,
+detector = ScaleSpaceAffinePatchExtractor( mrSize = 5.192, num_features = 3000,
                                           border = 5, num_Baum_iters = 1)
 #detector = ScaleSpaceAffinePatchExtractor( mrSize = 5.192, num_features = 3000,
 #                                          border = 5, num_Baum_iters = 1, 
