@@ -338,8 +338,8 @@ def test(model,epoch):
         LAFs1, descriptors1 = get_geometry_and_descriptors(img1, detector, descriptor)
         torch.cuda.empty_cache()
         LAFs2, descriptors2 = get_geometry_and_descriptors(img2, detector, descriptor)
-        visualize_LAFs(img1.detach().cpu().numpy().squeeze(), LAFs1.detach().cpu().numpy().squeeze(), 'b', show = False, save_to = LOG_DIR + "/detections1_" + str(epoch) + '.png')
-        visualize_LAFs(img2.detach().cpu().numpy().squeeze(), LAFs2.detach().cpu().numpy().squeeze(), 'g', show = False, save_to = LOG_DIR + "/detection2_" + str(epoch) + '.png')
+        #visualize_LAFs(img1.detach().cpu().numpy().squeeze(), LAFs1.detach().cpu().numpy().squeeze(), 'b', show = False, save_to = LOG_DIR + "/detections1_" + str(epoch) + '.png')
+        #visualize_LAFs(img2.detach().cpu().numpy().squeeze(), LAFs2.detach().cpu().numpy().squeeze(), 'g', show = False, save_to = LOG_DIR + "/detection2_" + str(epoch) + '.png')
         dist_matrix = distance_matrix_vector(descriptors1, descriptors2)
         min_dist, idxs_in_2 = torch.min(dist_matrix,1)
         dist_matrix[:,idxs_in_2] = 100000;# mask out nearest neighbour to find second nearest
@@ -356,8 +356,8 @@ def test(model,epoch):
         inl_ratio = float(plain_indxs_in1.size(0)) / float(tent_matches_in_1.size(0))
         print('Test epoch', str(epoch)) 
         print('Test on graf1-6,', tent_matches_in_1.size(0), 'tentatives', plain_indxs_in1.size(0), 'true matches', str(inl_ratio)[:5], ' inl.ratio')
-        visualize_LAFs(img1.detach().cpu().numpy().squeeze(), LAF1s_tent[plain_indxs_in1.long(),:,:].detach().cpu().numpy().squeeze(), 'g', show = False, save_to = LOG_DIR + "/inliers1_" + str(epoch) + '.png')
-        visualize_LAFs(img2.detach().cpu().numpy().squeeze(), LAF2s_tent[plain_indxs_in1.long(),:,:].detach().cpu().numpy().squeeze(), 'g', show = False, save_to = LOG_DIR + "/inliers2_" + str(epoch) + '.png')
+        #visualize_LAFs(img1.detach().cpu().numpy().squeeze(), LAF1s_tent[plain_indxs_in1.long(),:,:].detach().cpu().numpy().squeeze(), 'g', show = False, save_to = LOG_DIR + "/inliers1_" + str(epoch) + '.png')
+        #visualize_LAFs(img2.detach().cpu().numpy().squeeze(), LAF2s_tent[plain_indxs_in1.long(),:,:].detach().cpu().numpy().squeeze(), 'g', show = False, save_to = LOG_DIR + "/inliers2_" + str(epoch) + '.png')
     ################
         print ('Now native ori')
         #if 'Rot' not in args.arch:
@@ -367,8 +367,8 @@ def test(model,epoch):
         gc.collect()
         LAFs1, descriptors1 = get_geometry_and_descriptors(img1, detector, descriptor, False)
         LAFs2, descriptors2 = get_geometry_and_descriptors(img2, detector, descriptor, False)
-        visualize_LAFs(img1.detach().cpu().numpy().squeeze(), LAFs1.detach().cpu().numpy().squeeze(), 'b', show = False, save_to = LOG_DIR + "/ori_detections1_" + str(epoch) + '.png')
-        visualize_LAFs(img2.detach().cpu().numpy().squeeze(), LAFs2.detach().cpu().numpy().squeeze(), 'g', show = False, save_to = LOG_DIR + "/ori_detection2_" + str(epoch) + '.png')
+        #visualize_LAFs(img1.detach().cpu().numpy().squeeze(), LAFs1.detach().cpu().numpy().squeeze(), 'b', show = False, save_to = LOG_DIR + "/ori_detections1_" + str(epoch) + '.png')
+        #visualize_LAFs(img2.detach().cpu().numpy().squeeze(), LAFs2.detach().cpu().numpy().squeeze(), 'g', show = False, save_to = LOG_DIR + "/ori_detection2_" + str(epoch) + '.png')
         dist_matrix = distance_matrix_vector(descriptors1, descriptors2)
         min_dist, idxs_in_2 = torch.min(dist_matrix,1)
         dist_matrix[:,idxs_in_2] = 100000;# mask out nearest neighbour to find second nearest
@@ -385,8 +385,8 @@ def test(model,epoch):
         inl_ratio = float(plain_indxs_in1.size(0)) / float(tent_matches_in_1.size(0))
         print('Test epoch', str(epoch) )
         print('Test on ori graf1-6,', tent_matches_in_1.size(0), 'tentatives', plain_indxs_in1.size(0), 'true matches', str(inl_ratio)[:5], ' inl.ratio')
-        visualize_LAFs(img1.detach().cpu().numpy().squeeze(), LAF1s_tent[plain_indxs_in1.long(),:,:].detach().cpu().numpy().squeeze(), 'g', show = False, save_to = LOG_DIR + "/ori_inliers1_" + str(epoch) + '.png')
-        visualize_LAFs(img2.detach().cpu().numpy().squeeze(), LAF2s_tent[idxs_in_2.long(),:,:].detach().cpu().numpy().squeeze(), 'g', show = False, save_to = LOG_DIR + "/ori_inliers2_" + str(epoch) + '.png')
+        #visualize_LAFs(img1.detach().cpu().numpy().squeeze(), LAF1s_tent[plain_indxs_in1.long(),:,:].detach().cpu().numpy().squeeze(), 'g', show = False, save_to = LOG_DIR + "/ori_inliers1_" + str(epoch) + '.png')
+        #visualize_LAFs(img2.detach().cpu().numpy().squeeze(), LAF2s_tent[idxs_in_2.long(),:,:].detach().cpu().numpy().squeeze(), 'g', show = False, save_to = LOG_DIR + "/ori_inliers2_" + str(epoch) + '.png')
     return
 
 def adjust_learning_rate(optimizer):
