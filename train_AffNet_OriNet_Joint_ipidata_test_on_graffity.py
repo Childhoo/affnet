@@ -236,20 +236,20 @@ def train(train_loader, model, model_ori, optimizer, epoch):
         out_a_aff, out_p_aff = model(data_a_aff_crop,True), model(data_p_aff_crop,True)
         #out_a_aff_back = torch.bmm(torch.bmm(out_a_aff, inv_TA_a),  inv_rotmat_a)
         #out_p_aff_back = torch.bmm(torch.bmm(out_p_aff, inv_TA_p),  inv_rotmat_p)
-        ###### Get descriptors
+        
         out_patches_a_crop = extract_and_crop_patches_by_predicted_transform(data_a_aff, out_a_aff, crop_size = model.PS)
         out_patches_p_crop = extract_and_crop_patches_by_predicted_transform(data_p_aff, out_p_aff, crop_size = model.PS)
         
         out_a_rot, out_p_crop = model_ori(out_patches_a_crop,True), model_ori(out_patches_p_crop,True)
 
         ######Apply rot and get sifts
-        out_patches_a_crop = extract_and_crop_patches_by_predicted_transform(out_patches_a_crop, out_a_rot, crop_size = model_ori.PS)
-        out_patches_p_crop = extract_and_crop_patches_by_predicted_transform(out_patches_p_crop, out_p_crop, crop_size = model_ori.PS)
+        out_patches_a_crop_ori = extract_and_crop_patches_by_predicted_transform(out_patches_a_crop, out_a_rot, crop_size = model_ori.PS)
+        out_patches_p_crop_ori = extract_and_crop_patches_by_predicted_transform(out_patches_p_crop, out_p_crop, crop_size = model_ori.PS)
         
         # use this aff_corr cropped patch to estimate ori
         
-        desc_a = descriptor(out_patches_a_crop)
-        desc_p = descriptor(out_patches_p_crop)
+        desc_a = descriptor(out_patches_a_crop_ori)
+        desc_p = descriptor(out_patches_p_crop_ori)
         descr_dist =  torch.sqrt(((desc_a - desc_p)**2).view(data_a.size(0),-1).sum(dim=1) + 1e-6).mean()
         #geom_dist = torch.sqrt(((out_a_aff_back - out_p_aff_back)**2 ).view(-1,4).sum(dim=1) + 1e-8).mean()
         if args.loss == 'HardNet':
@@ -274,7 +274,9 @@ def train(train_loader, model, model_ori, optimizer, epoch):
                            100. * batch_idx / len(train_loader),
                     float(loss.detach().cpu().numpy()), float(descr_dist.detach().cpu().numpy())))
     torch.save({'epoch': epoch + 1, 'state_dict': model.state_dict()},
-               '{}/checkpoint_{}.pth'.format(LOG_DIR,epoch))
+               '{}/checkpoint_aff_{}.pth'.format(LOG_DIR,epoch))
+    torch.save({'epoch': epoch + 1, 'state_dict': model_ori.state_dict()},
+               '{}/checkpoint_ori_{}.pth'.format(LOG_DIR,epoch))
 def load_grayscale_var(fname):
     img = Image.open(fname).convert('RGB')
     img = np.mean(np.array(img), axis = 2)
