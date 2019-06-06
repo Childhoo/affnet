@@ -160,8 +160,9 @@ else:
 
 from architectures import OriNetFast
 orientor= OriNetFast(PS=32)
+if not args.no_cuda:
+    orientor = orientor.cuda()
 weightd_fname_orinet = './logs/OriNetFast_lr005_10M_20ep_aswap_ipidata_OriNet_6Brown_HardNet_0.005_10000000_HardNet/checkpoint_14.pth'
-
 checkpoint_orinet = torch.load(weightd_fname_orinet)
 orientor.load_state_dict(checkpoint_orinet['state_dict'])
 orientor.eval()
