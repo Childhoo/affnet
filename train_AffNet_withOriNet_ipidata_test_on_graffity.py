@@ -313,9 +313,9 @@ def test(model,epoch):
     torch.cuda.empty_cache()
     # switch to evaluate mode
     model.eval()
-    detector = ScaleSpaceAffinePatchExtractor( mrSize = 5.192, num_features = 1000,
+    detector = ScaleSpaceAffinePatchExtractor( mrSize = 5.192, num_features = 3000,
                                           border = 5, num_Baum_iters = 1, 
-                                          OriNet = orientor,
+                                          #OriNet = orientor,
                                           AffNet = model)
     descriptor = HardNet()
     model_weights = 'HardNet++.pth'
