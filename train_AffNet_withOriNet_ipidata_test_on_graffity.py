@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Jun  5 15:32:16 2019
+Created on Thu Jun  6 15:21:31 2019
 
 @author: chenlin
 """
@@ -157,6 +157,15 @@ elif args.descriptor == 'TFeat':
 else:
     descriptor = lambda x: L2Norm()(x.view(x.size(0),-1) - x.view(x.size(0),-1).mean(dim=1, keepdim=True).expand(x.size(0),x.size(1)*x.size(2)*x.size(3)).detach())
 
+
+from architectures import OriNetFast
+orientor= OriNetFast(PS=32)
+weightd_fname_orinet = './logs/OriNetFast_lr005_10M_20ep_aswap_ipidata_OriNet_6Brown_HardNet_0.005_10000000_HardNet/checkpoint_14.pth'
+
+checkpoint_orinet = torch.load(weightd_fname_orinet)
+orientor.load_state_dict(checkpoint_orinet['state_dict'])
+orientor.eval()
+
 suffix = args.expname +"_" + args.arch + '_6Brown_' +  args.descriptor + '_' + str(args.lr) + '_' + str(args.n_pairs) + "_" + str(args.loss) 
 ##########################################3
 def create_loaders():
@@ -202,10 +211,9 @@ def extract_random_LAF(data, max_rot = math.pi, max_tilt = 1.0, crop_size = 32):
     data_aff = extract_patches(data,  aff_LAFs, PS = data.size(2))
     data_affcrop = data_aff[:,:, st:fin, st:fin].contiguous()
     return data_affcrop, data_aff, rot_LAFs,inv_rotmat,inv_TA 
-def train(train_loader, model, model_ori, optimizer, epoch):
+def train(train_loader, model, optimizer, epoch):
     # switch to train mode
     model.train()
-    model_ori.train()
     pbar = tqdm(enumerate(train_loader))
     for batch_idx, data in pbar:
         data_a, data_p = data
@@ -220,36 +228,47 @@ def train(train_loader, model, model_ori, optimizer, epoch):
             if ep1 < 0:
                 break
         max_tilt = tilt_schedule[str(ep1)]
-        #extract affine augmented patches from the input anchor patch, use different parameters for affine and rotation module
+        #extract affine augmented patches from the input anchor patch
         data_a_aff_crop, data_a_aff, rot_LAFs_a, inv_rotmat_a, inv_TA_a = extract_random_LAF(data_a, math.pi, max_tilt, model.PS)
-        data_p_aff_crop, data_p_aff, rot_LAFs_p, inv_rotmat_p, inv_TA_p = extract_random_LAF(data_p, math.pi, max_tilt, model.PS)
         '''
         if 'Rot' not in args.arch:
             # when rotation is seprated from affine parameters, the same rotation is used for anchor and positive patch
             data_p_aff_crop, data_p_aff, rot_LAFs_p, inv_rotmat_p, inv_TA_p = extract_random_LAF(data_p, rot_LAFs_a, max_tilt, model.PS)
         else:
             data_p_aff_crop, data_p_aff, rot_LAFs_p, inv_rotmat_p, inv_TA_p = extract_random_LAF(data_p, math.pi, max_tilt, model.PS)
+        '''
+        data_p_aff_crop, data_p_aff, rot_LAFs_p, inv_rotmat_p, inv_TA_p = extract_random_LAF(data_p, math.pi, max_tilt, model.PS)
+        '''
         if inv_rotmat_p is None:
             inv_rotmat_p = inv_rotmat_a
-            '''
-        # here pridict the affine shape first
+        '''
         out_a_aff, out_p_aff = model(data_a_aff_crop,True), model(data_p_aff_crop,True)
         #out_a_aff_back = torch.bmm(torch.bmm(out_a_aff, inv_TA_a),  inv_rotmat_a)
         #out_p_aff_back = torch.bmm(torch.bmm(out_p_aff, inv_TA_p),  inv_rotmat_p)
+        ###### Get descriptors
         
-        out_patches_a_crop = extract_and_crop_patches_by_predicted_transform(data_a_aff, out_a_aff, crop_size = model.PS)
-        out_patches_p_crop = extract_and_crop_patches_by_predicted_transform(data_p_aff, out_p_aff, crop_size = model.PS)
+        # appy rot and crop the affine corrected patches
+        out_patches_a_affc = extract_and_crop_patches_by_predicted_transform(data_a_aff, out_a_aff, crop_size = 1.5*orientor.PS)
+        out_patches_p_affc = extract_and_crop_patches_by_predicted_transform(data_p_aff, out_p_aff, crop_size = 1.5*orientor.PS)
         
-        out_a_rot, out_p_rot = model_ori(out_patches_a_crop,True), model_ori(out_patches_p_crop,True)
+        
+        st = int((1.5*orientor.PS - orientor.PS)/2)
+        fin = st + orientor.PS
+
+        data_a_rot_crop = out_patches_a_affc[:,:, st:fin, st:fin].contiguous()
+        data_p_rot_crop = out_patches_p_affc[:,:, st:fin, st:fin].contiguous()
+        
+        #get the OriNet result
+        out_a_rot, out_p_rot = orientor(data_a_rot_crop,True), orientor(data_p_rot_crop,True)
 
         ######Apply rot and get sifts
-        out_patches_a_crop_ori = extract_and_crop_patches_by_predicted_transform(out_patches_a_crop, out_a_rot, crop_size = model_ori.PS)
-        out_patches_p_crop_ori = extract_and_crop_patches_by_predicted_transform(out_patches_p_crop, out_p_rot, crop_size = model_ori.PS)
+        out_patches_a_crop_ori = extract_and_crop_patches_by_predicted_transform(out_patches_a_affc, out_a_rot, crop_size = orientor.PS)
+        out_patches_p_crop_ori = extract_and_crop_patches_by_predicted_transform(out_patches_p_affc, out_p_rot, crop_size = orientor.PS)
         
-        # use this aff_corr cropped patch to estimate ori
-        
+        # use this aff_corr cropped patch to estimate ori        
         desc_a = descriptor(out_patches_a_crop_ori)
         desc_p = descriptor(out_patches_p_crop_ori)
+
         descr_dist =  torch.sqrt(((desc_a - desc_p)**2).view(data_a.size(0),-1).sum(dim=1) + 1e-6).mean()
         #geom_dist = torch.sqrt(((out_a_aff_back - out_p_aff_back)**2 ).view(-1,4).sum(dim=1) + 1e-8).mean()
         if args.loss == 'HardNet':
@@ -274,9 +293,7 @@ def train(train_loader, model, model_ori, optimizer, epoch):
                            100. * batch_idx / len(train_loader),
                     float(loss.detach().cpu().numpy()), float(descr_dist.detach().cpu().numpy())))
     torch.save({'epoch': epoch + 1, 'state_dict': model.state_dict()},
-               '{}/checkpoint_aff_{}.pth'.format(LOG_DIR,epoch))
-    torch.save({'epoch': epoch + 1, 'state_dict': model_ori.state_dict()},
-               '{}/checkpoint_ori_{}.pth'.format(LOG_DIR,epoch))
+               '{}/checkpoint_{}.pth'.format(LOG_DIR,epoch))
 def load_grayscale_var(fname):
     img = Image.open(fname).convert('RGB')
     img = np.mean(np.array(img), axis = 2)
@@ -292,15 +309,13 @@ def get_geometry_and_descriptors(img, det, desc, do_ori = True):
         descriptors = desc(patches)
     return LAFs, descriptors
 
-def test(model,model_ori, epoch):
+def test(model,epoch):
     torch.cuda.empty_cache()
     # switch to evaluate mode
     model.eval()
-    model_ori.eval()
-    #add the oriNet in the modelling process
     detector = ScaleSpaceAffinePatchExtractor( mrSize = 5.192, num_features = 3000,
                                           border = 5, num_Baum_iters = 1, 
-                                          OriNet = model_ori,
+                                          OriNet = orientor,
                                           AffNet = model)
     descriptor = HardNet()
     model_weights = 'HardNet++.pth'
@@ -387,20 +402,18 @@ def adjust_learning_rate(optimizer):
         1.0 - float(group['step']) * float(args.batch_size) / (args.n_pairs * float(args.epochs)))
     return
 
-def create_optimizer(model, model_ori, new_lr):
-    all_params = list(model.parameters()) + list(model_ori.parameters())
-    optimizer = optim.SGD(all_params, lr=new_lr,
+def create_optimizer(model, new_lr):
+    optimizer = optim.SGD(model.parameters(), lr=new_lr,
                           momentum=0.9, dampening=0.9,
                           weight_decay=args.wd)
     return optimizer
 
-def main(train_loader, test_loader, model, model_ori):
+def main(train_loader, test_loader, model):
     # print the experiment configuration
     print('\nparsed options:\n{}\n'.format(vars(args)))
     if args.cuda:
         model.cuda()
-        model_ori.cuda()
-    optimizer1 = create_optimizer(model, model_ori, args.lr)
+    optimizer1 = create_optimizer(model, args.lr)
     # optionally resume from a checkpoint
     if args.resume:
         if os.path.isfile(args.resume):
@@ -409,16 +422,15 @@ def main(train_loader, test_loader, model, model_ori):
             args.start_epoch = checkpoint['epoch']
             checkpoint = torch.load(args.resume)
             model.load_state_dict(checkpoint['state_dict'])
-            model_ori.load_state_dict(checkpoint['state_dict']) #also loading ori parameters
         else:
             print('=> no checkpoint found at {}'.format(args.resume))
     start = args.start_epoch
     end = start + args.epochs
-    test(model,model_ori, -1)
+    test(model, -1)
     for epoch in range(start, end):
         # iterate over test loaders and test results
-        train(train_loader, model, model_ori, optimizer1, epoch)
-        test(model, model_ori, epoch)
+        train(train_loader, model, optimizer1, epoch)
+        test(model, epoch)
     return 0
 if __name__ == '__main__':
     LOG_DIR = args.log_dir
@@ -452,10 +464,5 @@ if __name__ == '__main__':
     else:
         print (args.arch, 'is incorrect architecture')
         sys.exit(1)
-        
-    from architectures import OriNetFast
-    model_ori = OriNetFast(PS=32)
-    
-    
     train_loader, test_loader = create_loaders()
-    main(train_loader, test_loader, model, model_ori)
+    main(train_loader, test_loader, model)
