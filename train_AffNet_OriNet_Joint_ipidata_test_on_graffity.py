@@ -75,6 +75,8 @@ parser.add_argument('--pin-memory',type=bool, default= True,
                     help='')
 parser.add_argument('--resume', default='', type=str, metavar='PATH',
                     help='path to latest checkpoint (default: none)')
+parser.add_argument('--resume_ori', default='', type=str, metavar='PATH',
+                    help='path to latest checkpoint (default: none) for orientation')
 parser.add_argument('--start-epoch', default=0, type=int, metavar='N',
                     help='manual epoch number (useful on restarts)')
 parser.add_argument('--epochs', type=int, default=10, metavar='E',
@@ -222,7 +224,7 @@ def train(train_loader, model, model_ori, optimizer, epoch):
         max_tilt = tilt_schedule[str(ep1)]
         #extract affine augmented patches from the input anchor patch, use different parameters for affine and rotation module
         data_a_aff_crop, data_a_aff, rot_LAFs_a, inv_rotmat_a, inv_TA_a = extract_random_LAF(data_a, math.pi, max_tilt, model.PS)
-        data_p_aff_crop, data_p_aff, rot_LAFs_p, inv_rotmat_p, inv_TA_p = extract_random_LAF(data_p, math.pi, max_tilt, model.PS)
+        data_p_aff_crop, data_p_aff, rot_LAFs_p, inv_rotmat_p, inv_TA_p = extract_random_LAF(data_p, rot_LAFs_a, max_tilt, model.PS)
         '''
         if 'Rot' not in args.arch:
             # when rotation is seprated from affine parameters, the same rotation is used for anchor and positive patch
@@ -406,12 +408,20 @@ def main(train_loader, test_loader, model, model_ori):
         if os.path.isfile(args.resume):
             print('=> loading checkpoint {}'.format(args.resume))
             checkpoint = torch.load(args.resume)
-            args.start_epoch = checkpoint['epoch']
+#            args.start_epoch = checkpoint['epoch']
             checkpoint = torch.load(args.resume)
             model.load_state_dict(checkpoint['state_dict'])
-            model_ori.load_state_dict(checkpoint['state_dict']) #also loading ori parameters
         else:
             print('=> no checkpoint found at {}'.format(args.resume))
+        if os.path.isfile(args.resume_ori):
+            print('=> loading checkpoint {}'.format(args.resume_ori))
+            checkpoint = torch.load(args.resume_ori)
+#            args.start_epoch = checkpoint['epoch']
+            checkpoint = torch.load(args.resume_ori)
+            model_ori.load_state_dict(checkpoint['state_dict']) #also loading ori parameters
+        else:
+            print('=> no checkpoint found at {}'.format(args.resume_ori))
+        
     start = args.start_epoch
     end = start + args.epochs
     test(model,model_ori, -1)
