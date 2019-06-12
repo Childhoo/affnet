@@ -396,7 +396,7 @@ if __name__ == '__main__':
     LOG_DIR = os.path.join(args.log_dir,suffix)
     if not os.path.isdir(LOG_DIR):
         os.makedirs(LOG_DIR)
-    from architectures import AffNetFast, AffNetFastScale, AffNetFast4, AffNetFast4RotNosc, AffNetFast52RotUp,AffNetFast52Rot,AffNetFast5Rot, AffNetFast4Rot, AffNetFast4Rot
+    from architectures import AffNetFast, AffNetFastScale, AffNetFast4, AffNetFast4RotNosc, AffNetFast52RotUp,AffNetFast52Rot,AffNetFast5Rot, AffNetFast4Rot, AffNetFast4Rot, AffNetFast_Chen
     from architectures import AffNetFast2Par,AffNetFastBias
     if args.arch == 'AffNetFast':
         model = AffNetFast(PS=PS)
