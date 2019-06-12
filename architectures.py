@@ -618,7 +618,7 @@ class AffNetFast2Par(nn.Module):
         x  = self.features(self.input_norm(input)).view(-1,3)
         angle = torch.atan2(x[:,1], x[:,2]+1e-8);
         rot = get_rotation_matrix(angle)
-        tilt = torch.exp(1.8 * F.tanh(x[:,0]))
+        tilt = torch.exp(1.8 * F.tanh(x[:,0])) # to restrict predicted tilt to be in 1/6 to 6
         tilt_matrix = torch.eye(2).unsqueeze(0).repeat(input.size(0),1,1)
         if x.is_cuda:
             tilt_matrix = tilt_matrix.cuda()

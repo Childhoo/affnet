@@ -59,8 +59,8 @@ from Losses import distance_matrix_vector
 from ReprojectionStuff import get_GT_correspondence_indexes
 
 PS = 32
-tilt_schedule = {'0': 3.0, '1': 4.0, '3': 4.5, '5': 4.8, '6': 5.2, '8':  5.8 }
-
+#tilt_schedule = {'0': 3.0, '1': 4.0, '3': 4.5, '5': 4.8, '6': 5.2, '8':  5.8 }
+tilt_schedule = {'0': 5.5, '1': 5.8}
 # Training settings
 parser = argparse.ArgumentParser(description='PyTorch AffNet')
 
@@ -231,15 +231,13 @@ def train(train_loader, model, optimizer, epoch):
         max_tilt = tilt_schedule[str(ep1)]
         #extract affine augmented patches from the input anchor patch
         data_a_aff_crop, data_a_aff, rot_LAFs_a, inv_rotmat_a, inv_TA_a = extract_random_LAF(data_a, math.pi, max_tilt, model.PS)
+        data_p_aff_crop, data_p_aff, rot_LAFs_p, inv_rotmat_p, inv_TA_p = extract_random_LAF(data_p, math.pi, max_tilt, model.PS)
         '''
         if 'Rot' not in args.arch:
             # when rotation is seprated from affine parameters, the same rotation is used for anchor and positive patch
             data_p_aff_crop, data_p_aff, rot_LAFs_p, inv_rotmat_p, inv_TA_p = extract_random_LAF(data_p, rot_LAFs_a, max_tilt, model.PS)
         else:
             data_p_aff_crop, data_p_aff, rot_LAFs_p, inv_rotmat_p, inv_TA_p = extract_random_LAF(data_p, math.pi, max_tilt, model.PS)
-        '''
-        data_p_aff_crop, data_p_aff, rot_LAFs_p, inv_rotmat_p, inv_TA_p = extract_random_LAF(data_p, math.pi, max_tilt, model.PS)
-        '''
         if inv_rotmat_p is None:
             inv_rotmat_p = inv_rotmat_a
         '''
@@ -316,7 +314,7 @@ def test(model,epoch):
     model.eval()
     detector = ScaleSpaceAffinePatchExtractor( mrSize = 5.192, num_features = 800,
                                           border = 5, num_Baum_iters = 1, 
-                                          #OriNet = orientor,
+                                          OriNet = orientor,
                                           AffNet = model)
     descriptor = HardNet()
     model_weights = 'HardNet++.pth'
@@ -366,6 +364,7 @@ def test(model,epoch):
         del LAFs1, descriptors1, LAFs2, descriptors2, dist_matrix,tent_matches_in_2,plain_indxs_in1, tent_matches_in_1,idxs_in_2,mask,min_2nd_dist,idxs_2nd_in_2,min_dist,LAF1s_tent,LAF2s_tent
         torch.cuda.empty_cache()
         gc.collect()
+        #if do orientation is not activated, then the orientation step is skipped [this is not correct]
         LAFs1, descriptors1 = get_geometry_and_descriptors(img1, detector, descriptor, False)
         LAFs2, descriptors2 = get_geometry_and_descriptors(img2, detector, descriptor, False)
         #visualize_LAFs(img1.detach().cpu().numpy().squeeze(), LAFs1.detach().cpu().numpy().squeeze(), 'b', show = False, save_to = LOG_DIR + "/ori_detections1_" + str(epoch) + '.png')
