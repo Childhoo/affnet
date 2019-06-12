@@ -420,6 +420,8 @@ if __name__ == '__main__':
         model = AffNetFast5Rot(PS=PS)
     elif args.arch == 'AffNetFast4RotNosc':
         model = AffNetFast4RotNosc(PS=PS)
+    elif args.arch == 'AffNetFast_Chen':
+        model = AffNetFast_Chen(PS=PS)
     else:
         print (args.arch, 'is incorrect architecture')
         sys.exit(1)
