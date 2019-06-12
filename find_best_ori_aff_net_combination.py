@@ -40,6 +40,9 @@ cv2_scale40 = lambda x: cv2.resize(x, dsize=(40, 40),
                                  interpolation=cv2.INTER_LINEAR)
 from augmentation import get_random_norm_affine_LAFs,get_random_rotation_LAFs, get_random_shifts_LAFs
 from LAF import denormalizeLAFs, LAFs2ell, abc2A, extract_patches,normalizeLAFs
+from architectures import AffNetFast, AffNetFastScale, AffNetFast4, AffNetFast4RotNosc, \
+AffNetFast52RotUp,AffNetFast52Rot,AffNetFast5Rot, AffNetFast4Rot, AffNetFast4Rot, OriNetFast
+from architectures import AffNetFast2Par,AffNetFastBias
 from pytorch_sift import SIFTNet
 from HardNet import HardNet, L2Norm
 #from Losses import loss_HardNetDetach, loss_HardNet
@@ -108,6 +111,9 @@ def test(epoch):
     detector = ScaleSpaceAffinePatchExtractor( mrSize = 5.192, num_features = 3000,
                                           border = 5, num_Baum_iters = 1, 
                                           AffNet = AffNetPix, OriNet = OriNetPix)
+#    detector = ScaleSpaceAffinePatchExtractor( mrSize = 5.192, num_features = 3000,
+#                                      border = 5, num_Baum_iters = 1, 
+#                                      AffNet = AffNetPix)
     descriptor = HardNet()
     model_weights = 'HardNet++.pth'
     hncheckpoint = torch.load(model_weights)
