@@ -276,6 +276,9 @@ class AffNetFast_Chen(nn.Module):
             nn.Conv2d(64, 128, kernel_size=5, stride=1, padding=0, bias = False),
             nn.BatchNorm2d(128, affine=False),
             nn.ReLU(),
+            
+        )
+        self.classifier = nn.Sequential(
             nn.Linear(128, 64,bias=False),
             nn.BatchNorm2d(64, affine=False),
             nn.ReLU(),
@@ -285,8 +288,8 @@ class AffNetFast_Chen(nn.Module):
             nn.Dropout(0.25),
             nn.Linear(16, 3,bias=True),
             nn.Tanh(),
-            nn.AdaptiveAvgPool2d(1)
         )
+
         self.PS = PS
         self.features.apply(self.weights_init)
         self.halfPS = int(PS/2)
@@ -305,7 +308,10 @@ class AffNetFast_Chen(nn.Module):
                 pass
         return
     def forward(self, input, return_A_matrix = False):
-        xy = self.features(self.input_norm(input)).view(-1,3)
+#        xy = self.features(self.input_norm(input)).view(-1,3)
+        xy = self.features(self.input_norm(input))
+        xy = xy.view(xy.size(0), 128)
+        xy = self.classifier(xy).view(-1,3)
         a1 = torch.cat([1.0 + xy[:,0].contiguous().view(-1,1,1), 0 * xy[:,0].contiguous().view(-1,1,1)], dim = 2).contiguous()
         a2 = torch.cat([xy[:,1].contiguous().view(-1,1,1), 1.0 + xy[:,2].contiguous().view(-1,1,1)], dim = 2).contiguous()
         return rectifyAffineTransformationUpIsUp(torch.cat([a1,a2], dim = 1).contiguous())
