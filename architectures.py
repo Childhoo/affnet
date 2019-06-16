@@ -279,15 +279,16 @@ class AffNetFast_Chen(nn.Module):
             
         )
         self.classifier = nn.Sequential(
-            nn.Linear(128, 64,bias=False),
-            nn.BatchNorm2d(64, affine=False),
-            nn.ReLU(),
-            nn.Linear(64, 16,bias=False),
-            nn.BatchNorm2d(16, affine=False),
+            nn.Linear(128, 64, bias=False),
+            nn.BatchNorm1d(64, affine=False),
             nn.ReLU(),
             nn.Dropout(0.25),
-            nn.Linear(16, 3,bias=True),
+            nn.Linear(64, 16, bias=False),
+            nn.BatchNorm1d(16, affine=False),
             nn.Tanh(),
+            
+            nn.Linear(16, 3, bias=True),
+#            nn.Tanh(),
         )
 
         self.PS = PS
