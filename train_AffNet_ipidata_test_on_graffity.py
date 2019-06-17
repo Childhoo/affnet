@@ -234,7 +234,7 @@ def train(train_loader, model, optimizer, epoch):
         if args.loss == 'HardNet':
             loss = loss_HardNet(desc_a,desc_p); 
         elif args.loss == 'HardNet_Chen':
-            loss = loss_HardNet_Chen(desc_a,desc_p); 
+            loss = loss_HardNet_Chen(desc_a,desc_p,loss_type = "contrastive"); 
         elif args.loss == 'HardNegC':
             loss = loss_HardNegC(desc_a,desc_p); 
         #elif args.loss == 'Geom':

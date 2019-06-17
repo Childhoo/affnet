@@ -238,15 +238,19 @@ def loss_HardNet_Chen(anchor, positive, anchor_swap = False, anchor_ave = False,
         sys.exit(1)
     if loss_type == "triplet_margin":
         loss = torch.clamp(margin + pos - min_neg, min=0.0)
-        cos = torch.nn.CosineSimilarity(dim=1, eps=1e-6)
-        cos_dis = cos(pos, min_neg)
-        loss = loss + 0.1*cos_dis.abs_()
+        print(loss.shape)
+        print(pos.shape)
+        print(min_neg.shape)
+#        cos = torch.nn.CosineSimilarity(dim=0, eps=1e-6) #this is not desc to desc loss
+#        cos_dis = cos(pos, min_neg)
+#        loss = loss + 0.1*cos_dis.abs_()
     elif loss_type == 'softmax':
         exp_pos = torch.exp(2.0 - pos);
         exp_den = exp_pos + torch.exp(2.0 - min_neg) + eps;
         loss = - torch.log( exp_pos / exp_den )
     elif loss_type == 'contrastive':
-        loss = torch.clamp(margin - min_neg, min=0.0) + pos;
+#        loss = torch.clamp(margin - min_neg, min=0.0) + pos;
+        loss = torch.clamp(margin - min_neg, min=0.0) + torch.clamp(pos/(min_neg+1e-8), min=1.0, max=50.0)*pos
     else: 
         print ('Unknown loss type. Try triplet_margin, softmax or contrastive')
         sys.exit(1)
