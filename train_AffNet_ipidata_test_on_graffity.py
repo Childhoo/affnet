@@ -45,7 +45,7 @@ from augmentation import get_random_norm_affine_LAFs,get_random_rotation_LAFs, g
 from LAF import denormalizeLAFs, LAFs2ell, abc2A, extract_patches,normalizeLAFs
 from pytorch_sift import SIFTNet
 from HardNet import HardNet, L2Norm, HardTFeatNet
-from Losses import loss_HardNegC, loss_HardNet
+from Losses import loss_HardNegC, loss_HardNet, loss_HardNet_Chen
 from SparseImgRepresenter import ScaleSpaceAffinePatchExtractor
 from LAF import denormalizeLAFs, LAFs2ell, abc2A,visualize_LAFs
 from Losses import distance_matrix_vector
@@ -100,7 +100,7 @@ parser.add_argument('--descriptor', type=str,
                     help='which descriptor distance is minimized. Variants: pixels, SIFT, HardNet')
 parser.add_argument('--loss', type=str,
                     default='HardNet',
-                    help='Variants: HardNet, HardNegC, PosDist')
+                    help='Variants: HardNet, HardNegC, PosDist, HardNet_Chen')
 parser.add_argument('--arch', type=str,
                     default='AffNetFast',
                     help='Variants: AffNetFast, AffNetFast4, AffNetFast4Rot')
@@ -233,6 +233,8 @@ def train(train_loader, model, optimizer, epoch):
         #geom_dist = torch.sqrt(((out_a_aff_back - out_p_aff_back)**2 ).view(-1,4).sum(dim=1) + 1e-8).mean()
         if args.loss == 'HardNet':
             loss = loss_HardNet(desc_a,desc_p); 
+        elif args.loss == 'HardNet_Chen':
+            loss = loss_HardNet_Chen(desc_a,desc_p); 
         elif args.loss == 'HardNegC':
             loss = loss_HardNegC(desc_a,desc_p); 
         #elif args.loss == 'Geom':
