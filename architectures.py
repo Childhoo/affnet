@@ -288,7 +288,74 @@ class AffNetFast_Chen(nn.Module):
             nn.Tanh(),
             
             nn.Linear(16, 3, bias=True),
+            
 #            nn.Tanh(),
+        )
+
+        self.PS = PS
+        self.features.apply(self.weights_init)
+        self.halfPS = int(PS/2)
+        return
+    def input_norm(self,x):
+        flat = x.view(x.size(0), -1)
+        mp = torch.mean(flat, dim=1).detach()
+        sp = torch.std(flat, dim=1).detach() + 1e-7
+        return (x - mp.unsqueeze(-1).unsqueeze(-1).unsqueeze(-1).expand_as(x)) / sp.unsqueeze(-1).unsqueeze(-1).unsqueeze(1).expand_as(x)
+    def weights_init(self,m):
+        if isinstance(m, nn.Conv2d):
+            nn.init.orthogonal(m.weight.data, gain=0.8)
+            try:
+                nn.init.constant(m.bias.data, 0.01)
+            except:
+                pass
+        return
+    def forward(self, input, return_A_matrix = False):
+#        xy = self.features(self.input_norm(input)).view(-1,3)
+        xy = self.features(self.input_norm(input))
+        xy = xy.view(xy.size(0), 128)
+        xy = self.classifier(xy).view(-1,3)
+        a1 = torch.cat([1.0 + xy[:,0].contiguous().view(-1,1,1), 0 * xy[:,0].contiguous().view(-1,1,1)], dim = 2).contiguous()
+        a2 = torch.cat([xy[:,1].contiguous().view(-1,1,1), 1.0 + xy[:,2].contiguous().view(-1,1,1)], dim = 2).contiguous()
+        return rectifyAffineTransformationUpIsUp(torch.cat([a1,a2], dim = 1).contiguous())
+
+class AffNetFast_Chen_2(nn.Module):
+    def __init__(self, PS = 32):
+        super(AffNetFast_Chen, self).__init__()
+        self.features = nn.Sequential(
+            nn.Conv2d(1, 16, kernel_size=3, padding=1, bias = False),
+            nn.BatchNorm2d(16, affine=False),
+            nn.ReLU(),
+            nn.Conv2d(16, 16, kernel_size=3, stride=1, padding=1, bias = False),
+            nn.BatchNorm2d(16, affine=False),
+            nn.ReLU(),
+            nn.Conv2d(16, 32, kernel_size=3, stride=2, padding=1, bias = False),
+            nn.BatchNorm2d(32, affine=False),
+            nn.ReLU(),
+            nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1, bias = False),
+            nn.BatchNorm2d(32, affine=False),
+            nn.ReLU(),
+            nn.Conv2d(32, 64, kernel_size=3, stride=2, padding=1, bias = False),
+            nn.BatchNorm2d(64, affine=False),
+            nn.ReLU(),
+            nn.Conv2d(64, 64, kernel_size=4, stride=1, padding=0, bias = False),
+            nn.BatchNorm2d(64, affine=False),
+            nn.ReLU(),           
+            nn.Conv2d(64, 128, kernel_size=5, stride=1, padding=0, bias = False),
+            nn.BatchNorm2d(128, affine=False),
+            nn.ReLU(),
+            
+        )
+        self.classifier = nn.Sequential(
+            nn.Linear(128, 64, bias=False),
+            nn.BatchNorm1d(64, affine=False),
+            nn.ReLU(),
+            nn.Linear(64, 16, bias=False),
+            nn.BatchNorm1d(16, affine=False),
+            nn.ReLU(),
+            nn.Dropout(0.25),
+            nn.Linear(16, 3, bias=True),
+            nn.Tanh(),
+            nn.AdaptiveAvgPool1d(1)
         )
 
         self.PS = PS
