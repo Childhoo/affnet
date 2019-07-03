@@ -399,7 +399,7 @@ if __name__ == '__main__':
     if not os.path.isdir(LOG_DIR):
         os.makedirs(LOG_DIR)
     from architectures import AffNetFast, AffNetFastScale, AffNetFast4, AffNetFast4RotNosc, AffNetFast52RotUp,AffNetFast52Rot,AffNetFast5Rot, AffNetFast4Rot, AffNetFast4Rot, AffNetFast_Chen
-    from architectures import AffNetFast2Par,AffNetFastBias
+    from architectures import AffNetFast2Par,AffNetFastBias, AffNetFast_Chen_lati_longi
     if args.arch == 'AffNetFast':
         model = AffNetFast(PS=PS)
     elif args.arch == 'AffNetFastBias':
@@ -424,6 +424,8 @@ if __name__ == '__main__':
         model = AffNetFast4RotNosc(PS=PS)
     elif args.arch == 'AffNetFast_Chen':
         model = AffNetFast_Chen(PS=PS)
+    elif args.arch == 'AffNetFast_Chen_lati_longi':
+        model = AffNetFast_Chen_lati_longi(PS=PS)
     else:
         print (args.arch, 'is incorrect architecture')
         sys.exit(1)
