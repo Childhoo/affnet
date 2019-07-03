@@ -320,7 +320,7 @@ class AffNetFast_Chen(nn.Module):
 
 class AffNetFast_Chen_lati_longi(nn.Module):
     def __init__(self, PS = 32):
-        super(AffNetFast_Chen, self).__init__()
+        super(AffNetFast_Chen_lati_longi, self).__init__()
         self.features = nn.Sequential(
             nn.Conv2d(1, 16, kernel_size=3, padding=1, bias = False),
             nn.BatchNorm2d(16, affine=False),
