@@ -360,10 +360,6 @@ class AffNetFast_Chen_lati_longi(nn.Module):
             nn.Conv2d(64, 2, kernel_size=8, stride=1, padding=0, bias = True),
             nn.Tanh(),
             nn.AdaptiveAvgPool2d(1))
-        
-        self.get_cs = nn.Sequential(
-            
-                )
 
         self.PS = PS
         self.features.apply(self.weights_init)
