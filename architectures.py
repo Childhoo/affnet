@@ -391,7 +391,7 @@ class AffNetFast_Chen_lati_longi(nn.Module):
         longi_br = self.longi_branch(xy).view(-1,2)
         1e-10
         
-        lati_br = torch.rand([10,2])
+#        lati_br = torch.rand([10,2])
         abs_max,ind_max = torch.max(torch.abs(lati_br), 1, keepdim=True)
         cur = lati_br/torch.clamp(abs_max, min=1e-10)
         cur_in = cur + (cur>=0).type(torch.FloatTensor)*1e-3 - (cur<0).type(torch.FloatTensor)*1e-3
