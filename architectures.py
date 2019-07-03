@@ -318,6 +318,108 @@ class AffNetFast_Chen(nn.Module):
         a2 = torch.cat([xy[:,1].contiguous().view(-1,1,1), 1.0 + xy[:,2].contiguous().view(-1,1,1)], dim = 2).contiguous()
         return rectifyAffineTransformationUpIsUp(torch.cat([a1,a2], dim = 1).contiguous())
 
+class AffNetFast_Chen_lati_longi(nn.Module):
+    def __init__(self, PS = 32):
+        super(AffNetFast_Chen, self).__init__()
+        self.features = nn.Sequential(
+            nn.Conv2d(1, 16, kernel_size=3, padding=1, bias = False),
+            nn.BatchNorm2d(16, affine=False),
+            nn.ReLU(),
+            nn.Conv2d(16, 16, kernel_size=3, stride=1, padding=1, bias = False),
+            nn.BatchNorm2d(16, affine=False),
+            nn.ReLU(),
+            nn.Conv2d(16, 32, kernel_size=3, stride=2, padding=1, bias = False),
+            nn.BatchNorm2d(32, affine=False),
+            nn.ReLU(),
+            nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1, bias = False),
+            nn.BatchNorm2d(32, affine=False),
+            nn.ReLU(),
+            
+        )
+        
+        self.lati_branch = nn.Sequential(
+            nn.Conv2d(32, 64, kernel_size=3, stride=2, padding=1, bias = False),
+            nn.BatchNorm2d(64, affine=False),
+            nn.ReLU(),
+            nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1, bias = False),
+            nn.BatchNorm2d(64, affine=False),
+            nn.ReLU(),
+            nn.Dropout(0.25),
+            nn.Conv2d(64, 2, kernel_size=8, stride=1, padding=0, bias = True),
+            nn.Tanh(),
+            nn.AdaptiveAvgPool2d(1))
+        
+        self.longi_branch = nn.Sequential(
+            nn.Conv2d(32, 64, kernel_size=3, stride=2, padding=1, bias = False),
+            nn.BatchNorm2d(64, affine=False),
+            nn.ReLU(),
+            nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1, bias = False),
+            nn.BatchNorm2d(64, affine=False),
+            nn.ReLU(),
+            nn.Dropout(0.25),
+            nn.Conv2d(64, 2, kernel_size=8, stride=1, padding=0, bias = True),
+            nn.Tanh(),
+            nn.AdaptiveAvgPool2d(1))
+        
+        self.get_cs = nn.Sequential(
+            
+                )
+
+        self.PS = PS
+        self.features.apply(self.weights_init)
+        self.lati_branch.apply(self.weights_init)
+        self.longi_branch.apply(self.weights_init)
+        self.halfPS = int(PS/2)
+        return
+    def input_norm(self,x):
+        flat = x.view(x.size(0), -1)
+        mp = torch.mean(flat, dim=1).detach()
+        sp = torch.std(flat, dim=1).detach() + 1e-7
+        return (x - mp.unsqueeze(-1).unsqueeze(-1).unsqueeze(-1).expand_as(x)) / sp.unsqueeze(-1).unsqueeze(-1).unsqueeze(1).expand_as(x)
+    def weights_init(self,m):
+        if isinstance(m, nn.Conv2d):
+            nn.init.orthogonal(m.weight.data, gain=0.8)
+            try:
+                nn.init.constant(m.bias.data, 0.01)
+            except:
+                pass
+        return
+    def forward(self, input, return_A_matrix = False):
+#        xy = self.features(self.input_norm(input)).view(-1,3)
+        xy = self.features(self.input_norm(input))
+        lati_br = self.lati_branch(xy).view(-1,2)
+        longi_br = self.longi_branch(xy).view(-1,2)
+        1e-10
+        
+        lati_br = torch.rand([10,2])
+        abs_max,ind_max = torch.max(torch.abs(lati_br), 1, keepdim=True)
+        cur = lati_br/torch.clamp(abs_max, min=1e-10)
+        cur_in = cur + (cur>=0).type(torch.FloatTensor)*1e-3 - (cur<0).type(torch.FloatTensor)*1e-3
+        cur_in_norm = torch.sqrt(torch.sum(cur_in**2,dim=1,keepdim=True))
+        cs_lati = cur_in/cur_in_norm 
+        four_lati_angle = torch.atan2(cs_lati[:,0], cs_lati[:,1]);
+        four_lati = torch.remainder(four_lati_angle, 2.0*np.pi)
+        tilt = 1/(torch.cos(0.25*four_lati) + 1e-10)
+        
+        abs_max,ind_max = torch.max(torch.abs(longi_br), 1, keepdim=True)
+        cur = lati_br/torch.clamp(abs_max,min=1e-10)
+        cur_in = (cur>=0).type(torch.DoubleTensor)*1e-3 - (cur<0).type(torch.DoubleTensor)*1e-3
+        cur_in_norm = torch.sqrt(torch.sum(torch.square(cur_in**2),dim=1))
+        cs_lati = cur_in/cur_in_norm 
+        longi_angle = torch.atan2(cs_lati[:,0], cs_lati[:,1]);
+        longi = torch.remainder(longi_angle, 2.0*np.pi)
+       
+        rot_longi = get_rotation_matrix(longi)
+        
+        tilt_matrix = torch.eye(2).unsqueeze(0).repeat(input.size(0),1,1)
+        if xy.is_cuda:
+            tilt_matrix = tilt_matrix.cuda()
+        tilt_matrix[:,0,0] = torch.sqrt(tilt)
+        tilt_matrix[:,1,1] = 1.0 / torch.sqrt(tilt)
+        
+        return rectifyAffineTransformationUpIsUp(torch.bmm(tilt_matrix, rot_longi)).contiguous()
+
+
 class AffNetFast_Chen_2(nn.Module):
     def __init__(self, PS = 32):
         super(AffNetFast_Chen, self).__init__()

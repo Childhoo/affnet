@@ -59,6 +59,7 @@ def loss_HardNegC(anchor, positive, margin = 1.0):
     assert anchor.size() == positive.size(), "Input sizes between positive and negative must be equal."
     assert anchor.dim() == 2, "Inputd must be a 2D matrix."
     eps = 1e-8
+    #tensor.detach() set the requirements of gradients as false
     dist_matrix_detach = distance_matrix_vector(anchor, positive.detach()) + eps
     pos1 = distance_vectors_pairwise(anchor,positive)
     eye = torch.autograd.Variable(torch.eye(dist_matrix_detach.size(1))).cuda()
