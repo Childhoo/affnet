@@ -385,12 +385,14 @@ class AffNetFast_Chen_lati_longi(nn.Module):
         xy = self.features(self.input_norm(input))
         lati_br = self.lati_branch(xy).view(-1,2)
         longi_br = self.longi_branch(xy).view(-1,2)
-        1e-10
         
 #        lati_br = torch.rand([10,2])
         abs_max,ind_max = torch.max(torch.abs(lati_br), 1, keepdim=True)
         cur = lati_br/torch.clamp(abs_max, min=1e-10)
-        cur_in = cur + (cur>=0).type(torch.FloatTensor)*1e-3 - (cur<0).type(torch.FloatTensor)*1e-3
+        if xy.is_cuda:
+            cur_in = cur + (cur>=0).type(torch.cuda.FloatTensor)*1e-3 - (cur<0).type(torch.cuda.FloatTensor)*1e-3
+        else:
+            cur_in = cur + (cur>=0).type(torch.FloatTensor)*1e-3 - (cur<0).type(torch.FloatTensor)*1e-3
         cur_in_norm = torch.sqrt(torch.sum(cur_in**2,dim=1,keepdim=True))
         cs_lati = cur_in/cur_in_norm 
         four_lati_angle = torch.atan2(cs_lati[:,0], cs_lati[:,1]);
@@ -398,9 +400,12 @@ class AffNetFast_Chen_lati_longi(nn.Module):
         tilt = 1/(torch.cos(0.25*four_lati) + 1e-10)
         
         abs_max,ind_max = torch.max(torch.abs(longi_br), 1, keepdim=True)
-        cur = lati_br/torch.clamp(abs_max,min=1e-10)
-        cur_in = (cur>=0).type(torch.DoubleTensor)*1e-3 - (cur<0).type(torch.DoubleTensor)*1e-3
-        cur_in_norm = torch.sqrt(torch.sum(torch.square(cur_in**2),dim=1))
+        cur = lati_br/torch.clamp(abs_max, min=1e-10)
+        if xy.is_cuda:
+            cur_in = cur + (cur>=0).type(torch.cuda.FloatTensor)*1e-3 - (cur<0).type(torch.cuda.FloatTensor)*1e-3
+        else:
+            cur_in = cur + (cur>=0).type(torch.FloatTensor)*1e-3 - (cur<0).type(torch.FloatTensor)*1e-3
+        cur_in_norm = torch.sqrt(torch.sum(torch.square(cur_in**2),dim=1, keepdim=True))
         cs_lati = cur_in/cur_in_norm 
         longi_angle = torch.atan2(cs_lati[:,0], cs_lati[:,1]);
         longi = torch.remainder(longi_angle, 2.0*np.pi)
