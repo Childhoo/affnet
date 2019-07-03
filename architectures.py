@@ -405,7 +405,7 @@ class AffNetFast_Chen_lati_longi(nn.Module):
             cur_in = cur + (cur>=0).type(torch.cuda.FloatTensor)*1e-3 - (cur<0).type(torch.cuda.FloatTensor)*1e-3
         else:
             cur_in = cur + (cur>=0).type(torch.FloatTensor)*1e-3 - (cur<0).type(torch.FloatTensor)*1e-3
-        cur_in_norm = torch.sqrt(torch.sum(torch.square(cur_in**2),dim=1, keepdim=True))
+        cur_in_norm = torch.sqrt(torch.sum(cur_in**2, dim=1, keepdim=True))
         cs_lati = cur_in/cur_in_norm 
         longi_angle = torch.atan2(cs_lati[:,0], cs_lati[:,1]);
         longi = torch.remainder(longi_angle, 2.0*np.pi)
