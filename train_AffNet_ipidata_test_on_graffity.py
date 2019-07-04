@@ -104,8 +104,9 @@ parser.add_argument('--loss', type=str,
 parser.add_argument('--arch', type=str,
                     default='AffNetFast',
                     help='Variants: AffNetFast, AffNetFast4, AffNetFast4Rot')
-
-
+parser.add_argument('--optim_type', type=str,
+                    default='SGD',
+                    help='Variants: SGD, Adam')
 args = parser.parse_args()
 
 
@@ -364,9 +365,18 @@ def adjust_learning_rate(optimizer):
     return
 
 def create_optimizer(model, new_lr):
-    optimizer = optim.SGD(model.parameters(), lr=new_lr,
+    if args.optim_type == "SGD":
+        optimizer = optim.SGD(model.parameters(), lr=new_lr,
                           momentum=0.9, dampening=0.9,
                           weight_decay=args.wd)
+    elif args.optim_type == "Adam":
+        optimizer = optim.Adam(model.parameters(), lr=new_lr,
+                               betas=(0.9, 0.999), eps=1e-08, 
+                               weight_decay=args.wd,
+                               amsgrad=False)
+    else:
+        print (args.optim_type, 'is unsupported optimizer')
+        sys.exit(1)
     return optimizer
 
 def main(train_loader, test_loader, model):
