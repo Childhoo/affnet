@@ -336,7 +336,6 @@ class AffNetFast_Chen_lati_longi(nn.Module):
             nn.ReLU(),
             
         )
-        
         self.lati_branch = nn.Sequential(
             nn.Conv2d(32, 64, kernel_size=3, stride=2, padding=1, bias = False),
             nn.BatchNorm2d(64, affine=False),
@@ -346,7 +345,7 @@ class AffNetFast_Chen_lati_longi(nn.Module):
             nn.ReLU(),
             nn.Dropout(0.25),
             nn.Conv2d(64, 2, kernel_size=8, stride=1, padding=0, bias = True),
-            nn.Tanh(),
+#            nn.Tanh(),
             nn.AdaptiveAvgPool2d(1))
         
         self.longi_branch = nn.Sequential(
@@ -358,7 +357,7 @@ class AffNetFast_Chen_lati_longi(nn.Module):
             nn.ReLU(),
             nn.Dropout(0.25),
             nn.Conv2d(64, 2, kernel_size=8, stride=1, padding=0, bias = True),
-            nn.Tanh(),
+#            nn.Tanh(),
             nn.AdaptiveAvgPool2d(1))
 
         self.PS = PS
@@ -418,7 +417,8 @@ class AffNetFast_Chen_lati_longi(nn.Module):
         tilt_matrix[:,0,0] = torch.sqrt(tilt)
         tilt_matrix[:,1,1] = 1.0 / torch.sqrt(tilt)
         
-        return rectifyAffineTransformationUpIsUp(torch.bmm(tilt_matrix, rot_longi)).contiguous()
+#        return rectifyAffineTransformationUpIsUp(torch.bmm(tilt_matrix, rot_longi)).contiguous()
+        return rectifyAffineTransformationUpIsUp(torch.bmm(rot_longi, tilt_matrix)).contiguous()
 
 
 class AffNetFast_Chen_2(nn.Module):
