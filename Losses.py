@@ -260,7 +260,7 @@ def loss_HardNet_Chen(anchor, positive, anchor_swap = False, anchor_ave = False,
 
 def loss_HardNet_k_hardest(anchor, positive, anchor_swap = False, anchor_ave = False,\
         margin = 1.0, batch_reduce = 'min_hardest_k', k=3, loss_type = "triplet_margin"):
-    """HardNet margin loss - calculates loss based on distance matrix based on positive distance and closest negative distance.
+    """HardNet margin loss - calculates loss based on distance matrix based on positive distance and k closest negative distance.
     """
 
     assert anchor.size() == positive.size(), "Input sizes between positive and negative must be equal."
@@ -273,8 +273,12 @@ def loss_HardNet_k_hardest(anchor, positive, anchor_swap = False, anchor_ave = F
     pos1 = torch.diag(dist_matrix)
     dist_without_min_on_diag = dist_matrix+eye*10
     mask = (dist_without_min_on_diag.ge(0.008).float()-1)*-1
-    mask = mask.type_as(dist_without_min_on_diag)*10
+    mask = mask.type_as(dist_without_min_on_diag)*100
     dist_without_min_on_diag = dist_without_min_on_diag+mask
+    if batch_reduce == 'min_hardest_k':
+        min_k_neg = (-1.0)*(0-dist_without_min_on_diag).topk(k,1)[0]
+        min_neg = min_k_neg.mean(1)
+    
     if batch_reduce == 'min':
         min_neg = torch.min(dist_without_min_on_diag,1)[0]
         if anchor_swap:
