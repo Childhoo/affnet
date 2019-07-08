@@ -52,7 +52,8 @@ from Losses import distance_matrix_vector
 from ReprojectionStuff import get_GT_correspondence_indexes
 
 PS = 32
-tilt_schedule = {'0': 3.0, '1': 4.0, '3': 4.5, '5': 4.8, '6': 5.2, '8':  5.8 }
+#tilt_schedule = {'0': 3.0, '1': 4.0, '3': 4.5, '5': 4.8, '6': 5.2, '8':  5.8 }
+tilt_schedule = {'0': 3.0, '2': 4.0, '6': 4.5, '10': 4.8, '12': 5.2, '16':  5.8 }
 
 # Training settings
 parser = argparse.ArgumentParser(description='PyTorch AffNet')
