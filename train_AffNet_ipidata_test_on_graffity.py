@@ -251,7 +251,8 @@ def train(train_loader, model, optimizer, epoch):
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-        adjust_learning_rate(optimizer)
+#        adjust_learning_rate(optimizer)
+        adjust_learning_rate_new(optimizer)
         if batch_idx % args.log_interval == 0:
             pbar.set_description(
                 'Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.4f},{:.4f}'.format(
@@ -366,6 +367,20 @@ def adjust_learning_rate(optimizer):
         group['lr'] = args.lr * (
         1.0 - float(group['step']) * float(args.batch_size) / (args.n_pairs * float(args.epochs)))
     return
+#figure out some new way to do learning rate decay
+def adjust_learning_rate_new(optimizer):
+    """Updates the learning rate given the learning rate decay.
+    The routine has been implemented according to the original Lua SGD optimizer
+    """
+    for group in optimizer.param_groups:
+        if 'step' not in group:
+            group['step'] = 0.
+        else:
+            group['step'] += 1.
+        group['lr'] = args.lr * 0.9**(
+                float(group['step']) * float(args.batch_size) / (args.n_pairs ))
+    return
+
 
 def create_optimizer(model, new_lr):
     if args.optim_type == "SGD":
