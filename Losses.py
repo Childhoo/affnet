@@ -278,8 +278,7 @@ def loss_HardNet_k_hardest(anchor, positive, anchor_swap = False, anchor_ave = F
     if batch_reduce == 'min_hardest_k':
         min_k_neg = (-1.0)*(0-dist_without_min_on_diag).topk(k,1)[0]
         min_neg = min_k_neg.mean(1)
-    
-    if batch_reduce == 'min':
+    elif batch_reduce == 'min':
         min_neg = torch.min(dist_without_min_on_diag,1)[0]
         if anchor_swap:
             min_neg2 = torch.min(dist_without_min_on_diag,0)[0]
@@ -317,6 +316,7 @@ def loss_HardNet_k_hardest(anchor, positive, anchor_swap = False, anchor_ave = F
     else: 
         print ('Unknown batch reduce mode. Try min, average or random')
         sys.exit(1)
+    
     if loss_type == "triplet_margin":
         loss = torch.clamp(margin + pos - min_neg, min=0.0)
         #cos = torch.nn.CosineSimilarity(dim=1, eps=1e-6)
