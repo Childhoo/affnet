@@ -240,11 +240,11 @@ def train(train_loader, model, optimizer, epoch):
         elif args.loss == 'HardNegC':
             loss = loss_HardNegC(desc_a,desc_p); 
         elif args.loss == 'HardNet_k_hardest':
-            loss = loss_HardNegC(desc_a,desc_p); 
+            loss = loss_HardNet_k_hardest(desc_a, desc_p, k=3); 
         #elif args.loss == 'Geom':
         #    loss = geom_dist; 
         elif args.loss == 'PosDist':
-            loss = descr_dist; 
+            loss = descr_dist;
         else:
             print('Unknown loss function')
             sys.exit(1)

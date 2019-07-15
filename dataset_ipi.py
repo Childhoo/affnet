@@ -113,6 +113,7 @@ class PhotoTour_IPI(VisionDataset):
 #           'notredame_harris': 0.1864, 'yosemite_harris': 0.1818, 'liberty_harris': 0.2019}
 #    lens = {'notredame': 468159, 'yosemite': 633587, 'liberty': 450092,
 #            'liberty_harris': 379587, 'yosemite_harris': 450912, 'notredame_harris': 325295}
+    #check whether this is right mean and std for ipi_dortmund_5 datasets
     mean = {'ipi_dortmund5': 0.4854}
     std = {'ipi_dortmund5': 0.1864}
     lens = {'ipi_dortmund5': 222721}
