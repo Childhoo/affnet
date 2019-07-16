@@ -94,6 +94,8 @@ parser.add_argument('--expname', default='', type=str,
                     help='experiment name')
 parser.add_argument('--seed', type=int, default=0, metavar='S',
                     help='random seed (default: 0)')
+parser.add_argument('--nearest_k', type=int, default=3, metavar='NearK',
+                    help='k value for the hardest k loss (default: k)')
 parser.add_argument('--log-interval', type=int, default=10, metavar='LI',
                     help='how many batches to wait before logging training status')
 parser.add_argument('--descriptor', type=str,
@@ -240,7 +242,7 @@ def train(train_loader, model, optimizer, epoch):
         elif args.loss == 'HardNegC':
             loss = loss_HardNegC(desc_a,desc_p); 
         elif args.loss == 'HardNet_k_hardest':
-            loss = loss_HardNet_k_hardest(desc_a, desc_p, k=3); 
+            loss = loss_HardNet_k_hardest(desc_a, desc_p, k=args.nearest_k); 
         #elif args.loss == 'Geom':
         #    loss = geom_dist; 
         elif args.loss == 'PosDist':
