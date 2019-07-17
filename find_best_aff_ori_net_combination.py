@@ -124,12 +124,12 @@ def test(epoch):
     AffNetPix.eval()
     
     
-    detector = ScaleSpaceAffinePatchExtractor( mrSize = 5.192, num_features = 3000,
-                                          border = 5, num_Baum_iters = 1, 
-                                          AffNet = AffNetPix, OriNet = OriNetPix)
 #    detector = ScaleSpaceAffinePatchExtractor( mrSize = 5.192, num_features = 3000,
-#                                      border = 5, num_Baum_iters = 1, 
-#                                      AffNet = AffNetPix)
+#                                          border = 5, num_Baum_iters = 1, 
+#                                          AffNet = AffNetPix, OriNet = OriNetPix)
+    detector = ScaleSpaceAffinePatchExtractor( mrSize = 5.192, num_features = 3000,
+                                      border = 5, num_Baum_iters = 1, 
+                                      AffNet = AffNetPix)
     descriptor = HardNet()
     model_weights = 'HardNet++.pth'
     hncheckpoint = torch.load(model_weights)
