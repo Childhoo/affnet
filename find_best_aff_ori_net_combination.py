@@ -65,12 +65,12 @@ USE_CUDA = True
 ### Initialization
 
 #weightd_fname = '../../pretrained/AffNet.pth'
-weightd_fname = 'logs/AffNetFast_lr005_10M_20ep_aswap_ipidata_AffNetFast_6Brown_HardNet_0.005_10000000_HardNegC/checkpoint_18.pth'
-
-checkpoint = torch.load(weightd_fname)
-AffNetPix.load_state_dict(checkpoint['state_dict'])
-
-AffNetPix.eval()
+#weightd_fname = 'logs/AffNetFast_lr005_10M_20ep_aswap_ipidata_AffNetFast_6Brown_HardNet_0.005_10000000_HardNegC/checkpoint_18.pth'
+#
+#checkpoint = torch.load(weightd_fname)
+#AffNetPix.load_state_dict(checkpoint['state_dict'])
+#
+#AffNetPix.eval()
 
 #load orientation net for more training process
 
