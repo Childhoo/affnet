@@ -109,11 +109,12 @@ def test(epoch):
     torch.cuda.empty_cache()
     # switch to evaluate mode
     
-#    OriNetPix = OriNetFast(PS=32)
-#    weightd_fname_orinet = 'logs/OriNetFast_lr005_10M_20ep_aswap_ipidata_OriNet_6Brown_HardNet_0.005_10000000_HardNet/checkpoint_' + str(epoch) + '.pth'
-#    checkpoint_orinet = torch.load(weightd_fname_orinet)
-#    OriNetPix.load_state_dict(checkpoint_orinet['state_dict'])
-#    OriNetPix.eval()
+    OriNetPix = OriNetFast(PS=32)
+    weightd_fname_orinet = './pretrained/OriNet.pth'
+    checkpoint_orinet = torch.load(weightd_fname_orinet)
+    OriNetPix.load_state_dict(checkpoint_orinet['state_dict'])
+    OriNetPix.eval()
+    
     AffNetPix = AffNetFast(PS = 32)
     weightd_fname = 'logs/AffNetFast_hardest_k_2_lr005_10M_25_0715ep_aswap_ipidata_AffNetFast_6Brown_HardNet_0.005_10000000_HardNet_k_hardest/checkpoint_'+ str(epoch) + '.pth'
 
@@ -123,12 +124,12 @@ def test(epoch):
     AffNetPix.eval()
     
     
-#    detector = ScaleSpaceAffinePatchExtractor( mrSize = 5.192, num_features = 3000,
-#                                          border = 5, num_Baum_iters = 1, 
-#                                          AffNet = AffNetPix, OriNet = OriNetPix)
     detector = ScaleSpaceAffinePatchExtractor( mrSize = 5.192, num_features = 3000,
-                                      border = 5, num_Baum_iters = 1, 
-                                      AffNet = AffNetPix)
+                                          border = 5, num_Baum_iters = 1, 
+                                          AffNet = AffNetPix, OriNet = OriNetPix)
+#    detector = ScaleSpaceAffinePatchExtractor( mrSize = 5.192, num_features = 3000,
+#                                      border = 5, num_Baum_iters = 1, 
+#                                      AffNet = AffNetPix)
     descriptor = HardNet()
     model_weights = 'HardNet++.pth'
     hncheckpoint = torch.load(model_weights)
