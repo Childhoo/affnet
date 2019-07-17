@@ -116,7 +116,7 @@ def test(epoch):
     OriNetPix.eval()
     
     AffNetPix = AffNetFast(PS = 32)
-    weightd_fname = 'logs/AffNetFast_hardest_k_2_lr005_10M_25_0715ep_aswap_ipidata_AffNetFast_6Brown_HardNet_0.005_10000000_HardNet_k_hardest/checkpoint_'+ str(epoch) + '.pth'
+    weightd_fname = 'logs/AffNetFast_hardest_k_4_lr005_10M_25_0715ep_aswap_ipidata_AffNetFast_6Brown_HardNet_0.005_10000000_HardNet_k_hardest/checkpoint_'+ str(epoch) + '.pth'
 
     checkpoint = torch.load(weightd_fname)
     AffNetPix.load_state_dict(checkpoint['state_dict'])
